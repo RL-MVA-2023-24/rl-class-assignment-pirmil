@@ -151,5 +151,6 @@ if __name__ == "__main__":
         plt.grid(True)
         plt.savefig(f'{agent_name}.png')
         plt.close()
+        agent.save(agent.save_path)
     print(f"Successfully trained {agent_name}!")
 
