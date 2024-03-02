@@ -10,6 +10,7 @@ from env_hiv import HIVPatient
 from dqn_agent import TargetNetwork, DeepQAgent
 from reinforce_agent import ReinforceAgent, PolicyNetwork
 from a2c_agent import A2CAgent, A2CPolicyNetwork, ValueNetwork
+from fqi_agent import FQIAgent
 from replay_buffer import prefill_buffer
 
 env = TimeLimit(
@@ -55,7 +56,7 @@ elif agent_name == 'Reinforce':
 
     config = {
         'gamma': 0.99,
-        'learning_rate': 0.01,
+        'learning_rate': 0.005,
         'nb_episodes': 10
     }
 elif agent_name == 'A2C':
@@ -69,12 +70,26 @@ elif agent_name == 'A2C':
 
     config = {
         'gamma': 0.99,
-        'learning_rate': 0.01,
+        'learning_rate': 0.005,
         'nb_episodes': 10,
         'entropy_coefficient': 1e-3
     }
+elif agent_name == 'FQI':
+    iterations = 20
 
-
+    config = {
+        'gamma': 0.98,
+        'horizon': int(1e5),
+        'disable_tqdm': False,
+        'regressor_name': 'ExtraTreesRegressor',
+        'regressor_params': {
+            'n_estimators': 50,
+            'min_samples_split': 2,
+            'max_features': 8,        
+        },
+        'monitor_every': 4,
+        'monitoring_nb_trials': 20,   
+    }
 
 
 ##### FIXED PARAMETERS ######
@@ -103,6 +118,8 @@ elif agent_name == 'A2C':
     if value_network_name == 'ValueNetwork':
         value_network = ValueNetwork(state_dim, value_network_hidden_dim)
     agent = A2CAgent(config, policy_network, value_network)
+elif agent_name == 'FQI':
+    agent = FQIAgent(config)
 
 class ProjectAgent:
     def __init__(self, project_agent_name=agent_name):
@@ -164,28 +181,37 @@ if __name__ == "__main__":
         plt.grid(True)
         plt.savefig(f'{agent_name}_2.png')
         plt.close()
-
     elif agent_name == 'Reinforce':
         print(f"Nb rollouts: {nb_rollouts}")
         print(f"Policy network:\n{policy_network}")
         avg_sum_rewards = agent.train(env, nb_rollouts)
         plt.figure(figsize=(15, 5))
-        plt.plot(avg_sum_rewards, label='Reinforce avg_sum_rewards (returns)')
+        plt.plot(avg_sum_rewards, label='avg_sum_rewards (returns)')
         plt.xlabel('Rollout')
         plt.legend()
         plt.grid(True)
         plt.savefig(f'{agent_name}.png')
         plt.close()
         agent.save(agent.save_path)
-
     elif agent_name == 'A2C':
         print(f"Nb rollouts: {nb_rollouts}")
         print(f"Policy network:\n{policy_network}")
         print(f"Value network:\n{value_network}")
         avg_sum_rewards = agent.train(env, nb_rollouts)
         plt.figure(figsize=(15, 5))
-        plt.plot(avg_sum_rewards, label='Reinforce avg_sum_rewards (returns)')
+        plt.plot(avg_sum_rewards, label='avg_sum_rewards (returns)')
         plt.xlabel('Rollout')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f'{agent_name}.png')
+        plt.close()
+        agent.save(agent.save_path)
+    elif agent_name == 'FQI':
+        print(f"Nb iterations: {iterations}")
+        MC_avg_discounted_reward, MC_avg_total_reward = agent.train(env, iterations)
+        plt.figure(figsize=(15, 5))
+        plt.plot(MC_avg_discounted_reward, label='MC_avg_discounted_reward')
+        plt.plot(MC_avg_total_reward, label='MC_avg_total_reward')
         plt.legend()
         plt.grid(True)
         plt.savefig(f'{agent_name}.png')
