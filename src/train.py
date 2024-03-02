@@ -143,7 +143,13 @@ if __name__ == "__main__":
     elif agent_name == 'Reinforce':
         print(f"Nb rollouts: {nb_rollouts}")
         print(f"Policy network:\n{policy_network}")
-        returns = agent.train(env, nb_rollouts)
-
+        avg_sum_rewards = agent.train(env, nb_rollouts)
+        plt.figure(figsize=(15, 5))
+        plt.plot(avg_sum_rewards, label='Reinforce avg_sum_rewards (returns)')
+        plt.xlabel('Rollout')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f'{agent_name}.png')
+        plt.close()
     print(f"Successfully trained {agent_name}!")
 
