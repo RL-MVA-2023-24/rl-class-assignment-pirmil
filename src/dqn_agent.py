@@ -165,7 +165,7 @@ class DeepQAgent:
                     if MC_tr > best_metric:
                         best_metric = MC_tr
                         self.save(self.save_path)
-                        print(f"Saved model. New best MC tot: {best_metric:.1f}")
+                        print(f"Saved model at path {self.save_path}. New best MC tot: {best_metric:.1f}")
                 else:
                     episode_return.append(episode_cum_reward)
                     print("Episode ", '{:4d}'.format(episode), 
