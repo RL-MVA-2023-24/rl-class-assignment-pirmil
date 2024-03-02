@@ -2,11 +2,47 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tqdm import trange
 from torch.distributions import Categorical
 
-class a2c_agent:
-    def __init__(self, config, policy_network, value_network):
+
+class ValueNetwork(nn.Module):
+    def __init__(self, state_dim, hidden_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(state_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 1)
+
+    def forward(self, x: torch.Tensor):
+        if x.dim() == 1:
+            x = x.unsqueeze(dim=0)
+        x = F.relu(self.fc1(x))
+        return self.fc2(x)
+    
+
+class A2CPolicyNetwork(nn.Module):
+    def __init__(self, state_dim, hidden_dim, nb_actions):
+        super().__init__()
+        self.fc1 = nn.Linear(state_dim, hidden_dim).double()
+        self.fc2 = nn.Linear(hidden_dim, nb_actions).double()
+
+    def forward(self, x: torch.Tensor):
+        if x.dim() == 1:
+            x = x.unsqueeze(dim=0)
+        x = F.relu(self.fc1(x))
+        action_scores = self.fc2(x)
+        return F.softmax(action_scores,dim=1)
+
+    def sample_action(self, x):
+        probabilities = self.forward(x)
+        action_distribution = Categorical(probabilities)
+        return action_distribution.sample().item()
+
+    def log_prob(self, x, a):
+        probabilities = self.forward(x)
+        action_distribution = Categorical(probabilities)
+        return action_distribution.log_prob(a)
+
+class A2CAgent:
+    def __init__(self, config, policy_network: nn.Module, value_network: nn.Module):
         self.device = "cuda" if next(policy_network.parameters()).is_cuda else "cpu"
         self.scalar_dtype = next(policy_network.parameters()).dtype
         self.policy = policy_network
@@ -17,6 +53,12 @@ class a2c_agent:
         self.nb_episodes = config['nb_episodes'] if 'nb_episodes' in config.keys() else 1
         self.entropy_coefficient = config['entropy_coefficient'] if 'entropy_coefficient' in config.keys() else 0.001
         self.save_path = config['save_path'] if 'save_path' in config.keys() else './agent.pth'
+
+    def greedy_action(self, x):
+        with torch.no_grad():        
+            probabilities = self.policy(torch.as_tensor(x))
+            action = torch.argmax(probabilities).item()
+            return action
 
     def sample_action(self, x):
         probabilities = self.policy(torch.as_tensor(x))
@@ -56,6 +98,7 @@ class a2c_agent:
                     new_returns = list(reversed(new_returns))
                     returns.extend(new_returns)
                     episodes_sum_of_rewards.append(episode_cum_reward)
+                    print(f"Episode: {ep+1}/{self.nb_episodes} - episode_cum_reward {episode_cum_reward:.0f}")
                     break
         # make loss        
         returns = torch.cat(returns)
@@ -72,9 +115,20 @@ class a2c_agent:
         loss.backward()
         self.optimizer.step()
         return np.mean(episodes_sum_of_rewards)
-
+    
     def train(self, env, nb_rollouts):
         avg_sum_rewards = []
-        for ep in trange(nb_rollouts):
+        for rollout in range(nb_rollouts):
+            print(f'Rollout: {rollout+1}/{nb_rollouts}')
             avg_sum_rewards.append(self.one_gradient_step(env))
         return avg_sum_rewards
+
+    def act(self, state):
+        return self.greedy_action(state)
+    
+    def save(self, path):
+        torch.save(self.policy.state_dict(), path)
+
+    def load(self, path):
+        self.policy.load_state_dict(torch.load(path, map_location=self.device))
+        self.policy.eval()

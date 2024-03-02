@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from env_hiv import HIVPatient
 from dqn_agent import TargetNetwork, DeepQAgent
 from reinforce_agent import ReinforceAgent, PolicyNetwork
+from a2c_agent import A2CAgent, A2CPolicyNetwork, ValueNetwork
 from replay_buffer import prefill_buffer
 
 env = TimeLimit(
@@ -16,7 +17,7 @@ env = TimeLimit(
 )  # The time wrapper limits the number of steps in an episode at 200.
 
 ##### HYPERPARAMETERS TO TUNE ######
-agent_name = ['DQN', 'Reinforce'][0]
+agent_name = ['DQN', 'Reinforce', 'A2C'][0]
 
 if agent_name == 'DQN':
     prefill_steps = 8000
@@ -57,6 +58,23 @@ elif agent_name == 'Reinforce':
         'learning_rate': 0.01,
         'nb_episodes': 10
     }
+elif agent_name == 'A2C':
+    nb_rollouts = 200
+
+    policy_network_name = 'A2CPolicyNetwork'
+    policy_network_hidden_dim = 128
+
+    value_network_name = 'ValueNetwork'
+    value_network_hidden_dim = 128
+
+    config = {
+        'gamma': 0.99,
+        'learning_rate': 0.01,
+        'nb_episodes': 10,
+        'entropy_coefficient': 1e-3
+    }
+
+
 
 
 ##### FIXED PARAMETERS ######
@@ -79,15 +97,22 @@ elif agent_name == 'Reinforce':
     if policy_network_name == 'PolicyNetwork':
         policy_network = PolicyNetwork(state_dim, policy_network_hidden_dim, nb_actions)
     agent = ReinforceAgent(config, policy_network)
-
+elif agent_name == 'A2C':
+    if policy_network_name == 'A2CPolicyNetwork':
+        policy_network = A2CPolicyNetwork(state_dim, policy_network_hidden_dim, nb_actions)
+    if value_network_name == 'ValueNetwork':
+        value_network = ValueNetwork(state_dim, value_network_hidden_dim)
+    agent = A2CAgent(config, policy_network, value_network)
 
 class ProjectAgent:
     def __init__(self, project_agent_name=agent_name):
         self.agent_name = project_agent_name
-        if self.agent_name=='DQN':
+        if self.agent_name == 'DQN':
             self.agent = DeepQAgent(config, model)
-        elif self.agent_name=='Reinforce':
+        elif self.agent_name == 'Reinforce':
             self.agent = ReinforceAgent(config, policy_network)
+        elif self.agent_name == 'A2C':
+            self.agent = A2CAgent(config, policy_network, value_network)
 
     def act(self, observation, use_random=False):
         return self.agent.act(observation)
@@ -141,6 +166,19 @@ if __name__ == "__main__":
         plt.close()
 
     elif agent_name == 'Reinforce':
+        print(f"Nb rollouts: {nb_rollouts}")
+        print(f"Policy network:\n{policy_network}")
+        avg_sum_rewards = agent.train(env, nb_rollouts)
+        plt.figure(figsize=(15, 5))
+        plt.plot(avg_sum_rewards, label='Reinforce avg_sum_rewards (returns)')
+        plt.xlabel('Rollout')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f'{agent_name}.png')
+        plt.close()
+        agent.save(agent.save_path)
+
+    elif agent_name == 'A2C':
         print(f"Nb rollouts: {nb_rollouts}")
         print(f"Policy network:\n{policy_network}")
         avg_sum_rewards = agent.train(env, nb_rollouts)

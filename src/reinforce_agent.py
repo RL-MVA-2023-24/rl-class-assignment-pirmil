@@ -57,7 +57,6 @@ class ReinforceAgent:
         log_probs = []
         returns = []
         for ep in range(self.nb_episodes):
-            print(f"Episode: {ep+1}/{self.nb_episodes}")
             x,_ = env.reset()
             rewards = []
             episode_cum_reward = 0
@@ -78,6 +77,7 @@ class ReinforceAgent:
                     new_returns = list(reversed(new_returns))
                     returns.extend(new_returns)
                     episodes_sum_of_rewards.append(episode_cum_reward)
+                    print(f"Episode: {ep+1}/{self.nb_episodes} - episode_cum_reward {episode_cum_reward:.0f}")
                     break
         # make loss
         returns = torch.tensor(returns)
