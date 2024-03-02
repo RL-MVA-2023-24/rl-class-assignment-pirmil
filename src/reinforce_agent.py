@@ -8,8 +8,8 @@ from torch.distributions import Categorical
 class PolicyNetwork(nn.Module):
     def __init__(self, state_dim, hidden_dim, nb_actions):
         super().__init__()
-        self.fc1 = nn.Linear(state_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, nb_actions)
+        self.fc1 = nn.Linear(state_dim, hidden_dim).double()
+        self.fc2 = nn.Linear(hidden_dim, nb_actions).double()
 
     def forward(self, x: torch.Tensor):
         if x.dim() == 1:
@@ -57,6 +57,7 @@ class ReinforceAgent:
         log_probs = []
         returns = []
         for ep in range(self.nb_episodes):
+            print(f"Episode: {ep}/{self.nb_episodes}")
             x,_ = env.reset()
             rewards = []
             episode_cum_reward = 0
@@ -90,7 +91,8 @@ class ReinforceAgent:
 
     def train(self, env, nb_rollouts):
         avg_sum_rewards = []
-        for ep in trange(nb_rollouts):
+        for rollout in trange(nb_rollouts):
+            print(f'Rollout: {rollout}/{nb_rollouts}')
             avg_sum_rewards.append(self.one_gradient_step(env))
         return avg_sum_rewards
     
