@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tqdm import trange
 from torch.distributions import Categorical
 
 class PolicyNetwork(nn.Module):
@@ -91,7 +90,7 @@ class ReinforceAgent:
 
     def train(self, env, nb_rollouts):
         avg_sum_rewards = []
-        for rollout in trange(nb_rollouts):
+        for rollout in range(nb_rollouts):
             print(f'Rollout: {rollout}/{nb_rollouts}')
             avg_sum_rewards.append(self.one_gradient_step(env))
         return avg_sum_rewards
