@@ -90,6 +90,12 @@ if __name__ == "__main__":
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
+    # Print model configurations
+    print(f"Final number of episodes {train_max_episode}")
+    print(f"Prefill steps {prefill_steps}")
+    print(config)
+    print(model)
+
     # Pre-fill the buffer
     prefill_buffer(env, agent, prefill_steps, random_samples=prefill_with_random)
 
