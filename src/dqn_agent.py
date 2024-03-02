@@ -157,21 +157,21 @@ class DeepQAgent:
                     print("Episode ", '{:4d}'.format(episode), 
                           ", epsilon ", '{:2.3f}'.format(epsilon), 
                           ", memory size ", '{:7d}'.format(len(self.memory)), 
-                          ", ep return ", '{:11.0f}'.format(episode_cum_reward), 
-                          ", MC tot ", '{:11.0f}'.format(MC_tr),
-                          ", MC disc ", '{:11.0f}'.format(MC_dr),
-                          ", V0 ", '{:11.0f}'.format(V0),
+                          ", ep return ", '{:7.0f}'.format(episode_cum_reward), 
+                          ", MC tot ", '{:7.0f}'.format(MC_tr),
+                          ", MC disc ", '{:7.0f}'.format(MC_dr),
+                          ", V0 ", '{:7.0f}'.format(V0),
                           sep='')
                     if MC_tr > best_metric:
                         best_metric = MC_tr
                         self.save(self.save_path)
-                        print(f"Saved model. New best ep return: {best_metric:.4f}")
+                        print(f"Saved model. New best MC tot: {best_metric:.1f}")
                 else:
                     episode_return.append(episode_cum_reward)
                     print("Episode ", '{:4d}'.format(episode), 
                           ", epsilon ", '{:2.3f}'.format(epsilon), 
                           ", memory size ", '{:7d}'.format(len(self.memory)), 
-                          ", ep return ", '{:11.0f}'.format(episode_cum_reward), 
+                          ", ep return ", '{:7.0f}'.format(episode_cum_reward), 
                           sep='')   
                 state, _ = env.reset()
                 episode_cum_reward = 0

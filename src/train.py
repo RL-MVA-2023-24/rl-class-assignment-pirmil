@@ -99,7 +99,6 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(15, 5))
     plt.plot(ep_length, label="Training episode length")
-    plt.plot(tot_rewards, label="MC eval of total reward")
     plt.legend()
     plt.grid(True)
     plt.savefig(f'{agent_name}_1.png')
@@ -107,6 +106,7 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(15, 5))
     plt.plot(disc_rewards, label="MC eval of discounted reward")
+    plt.plot(tot_rewards, label="MC eval of total reward")
     plt.plot(V0, label="Average $max_a Q(s_0)$")
     plt.legend()
     plt.grid(True)
