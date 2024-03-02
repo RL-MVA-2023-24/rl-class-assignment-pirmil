@@ -5,6 +5,7 @@ import tqdm
 import random
 import numpy as np
 from replay_buffer import ReplayBuffer
+import time
 
 
 class TargetNetwork(nn.Module):
@@ -116,6 +117,7 @@ class DeepQAgent:
         step = 0
         best_metric = 0
         while episode < max_episode:
+            start_time = time.time()
             # update epsilon
             if step > self.epsilon_delay:
                 epsilon = max(self.epsilon_min, epsilon-self.epsilon_step)
@@ -154,6 +156,7 @@ class DeepQAgent:
                     MC_avg_discounted_reward.append(MC_dr)   # NEW NEW NEW
                     V_init_state.append(V0)   # NEW NEW NEW
                     episode_return.append(episode_cum_reward)   # NEW NEW NEW
+                    episode_time = time.time() - start_time
                     print("Episode ", '{:4d}'.format(episode), 
                           ", epsilon ", '{:2.3f}'.format(epsilon), 
                           ", memory size ", '{:7d}'.format(len(self.memory)), 
@@ -161,6 +164,7 @@ class DeepQAgent:
                           ", MC tot ", '{:7.0f}'.format(MC_tr),
                           ", MC disc ", '{:7.0f}'.format(MC_dr),
                           ", V0 ", '{:7.0f}'.format(V0),
+                          ", Time ", '{:7.0f}'.format(episode_time),
                           sep='')
                     if MC_tr > best_metric:
                         best_metric = MC_tr
@@ -168,10 +172,12 @@ class DeepQAgent:
                         print(f"Saved model at path {self.save_path}. New best MC tot: {best_metric:.1f}")
                 else:
                     episode_return.append(episode_cum_reward)
+                    episode_time = time.time() - start_time
                     print("Episode ", '{:4d}'.format(episode), 
                           ", epsilon ", '{:2.3f}'.format(epsilon), 
                           ", memory size ", '{:7d}'.format(len(self.memory)), 
-                          ", ep return ", '{:7.0f}'.format(episode_cum_reward), 
+                          ", ep return ", '{:7.0f}'.format(episode_cum_reward),
+                          ", Time ", '{:7.0f}'.format(episode_time),
                           sep='')   
                 state, _ = env.reset()
                 episode_cum_reward = 0

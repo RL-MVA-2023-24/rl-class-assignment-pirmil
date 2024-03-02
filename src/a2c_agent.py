@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
+import time
 
 
 class ValueNetwork(nn.Module):
@@ -123,8 +124,10 @@ class A2CAgent:
     def train(self, env, nb_rollouts):
         avg_sum_rewards = []
         for rollout in range(nb_rollouts):
-            print(f'Rollout: {rollout+1}/{nb_rollouts}')
+            start_time = time.time()
             avg_sum_rewards.append(self.one_gradient_step(env))
+            rollout_time = time.time() - start_time
+            print(f"Completed rollout: {rollout+1}/{nb_rollouts} avg_sum_reward: {avg_sum_rewards[-1]:.0f} Time: {rollout_time:.0f}")
         return avg_sum_rewards
 
     def act(self, state):
