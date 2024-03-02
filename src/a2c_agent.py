@@ -8,27 +8,31 @@ from torch.distributions import Categorical
 class ValueNetwork(nn.Module):
     def __init__(self, state_dim, hidden_dim):
         super().__init__()
-        self.fc1 = nn.Linear(state_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 1)
+        self.fc1 = nn.Linear(state_dim, hidden_dim).double()
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim).double()
+        self.fc3 = nn.Linear(hidden_dim, 1).double()
 
     def forward(self, x: torch.Tensor):
         if x.dim() == 1:
             x = x.unsqueeze(dim=0)
         x = F.relu(self.fc1(x))
-        return self.fc2(x)
+        x = F.relu(self.fc2(x))
+        return self.fc3(x)
     
 
 class A2CPolicyNetwork(nn.Module):
     def __init__(self, state_dim, hidden_dim, nb_actions):
         super().__init__()
         self.fc1 = nn.Linear(state_dim, hidden_dim).double()
-        self.fc2 = nn.Linear(hidden_dim, nb_actions).double()
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim).double()
+        self.fc3 = nn.Linear(hidden_dim, nb_actions).double()
 
     def forward(self, x: torch.Tensor):
         if x.dim() == 1:
             x = x.unsqueeze(dim=0)
         x = F.relu(self.fc1(x))
-        action_scores = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        action_scores = self.fc3(x)
         return F.softmax(action_scores,dim=1)
 
     def sample_action(self, x):

@@ -51,7 +51,7 @@ elif agent_name == 'Reinforce':
     nb_rollouts = 200
 
     policy_network_name = 'PolicyNetwork'
-    policy_network_hidden_dim = 128
+    policy_network_hidden_dim = 256
 
     config = {
         'gamma': 0.99,
@@ -62,10 +62,10 @@ elif agent_name == 'A2C':
     nb_rollouts = 200
 
     policy_network_name = 'A2CPolicyNetwork'
-    policy_network_hidden_dim = 128
+    policy_network_hidden_dim = 256
 
     value_network_name = 'ValueNetwork'
-    value_network_hidden_dim = 128
+    value_network_hidden_dim = 256
 
     config = {
         'gamma': 0.99,
@@ -181,6 +181,7 @@ if __name__ == "__main__":
     elif agent_name == 'A2C':
         print(f"Nb rollouts: {nb_rollouts}")
         print(f"Policy network:\n{policy_network}")
+        print(f"Value network:\n{value_network}")
         avg_sum_rewards = agent.train(env, nb_rollouts)
         plt.figure(figsize=(15, 5))
         plt.plot(avg_sum_rewards, label='Reinforce avg_sum_rewards (returns)')
