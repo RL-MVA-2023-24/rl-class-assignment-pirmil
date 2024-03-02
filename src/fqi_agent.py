@@ -56,7 +56,7 @@ class FQIAgent:
         MC_avg_total_reward = []   # NEW NEW NEW
         MC_avg_discounted_reward = []   # NEW NEW NEW
         print(f"Training: ")
-        for iter in tqdm(range(iterations), disable=self.disable_tqdm):
+        for iter in tqdm.tqdm(range(iterations), disable=self.disable_tqdm):
             if iter==0:
                 value=R.copy()
             else:
@@ -82,7 +82,7 @@ class FQIAgent:
         R = []
         S2 = []
         D = []
-        for _ in tqdm(range(self.horizon), disable=self.disable_tqdm):
+        for _ in tqdm.tqdm(range(self.horizon), disable=self.disable_tqdm):
             a = env.action_space.sample()
             s2, r, done, trunc, _ = env.step(a)
             S.append(s)

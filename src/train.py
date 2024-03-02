@@ -18,7 +18,7 @@ env = TimeLimit(
 )  # The time wrapper limits the number of steps in an episode at 200.
 
 ##### HYPERPARAMETERS TO TUNE ######
-agent_name = ['DQN', 'Reinforce', 'A2C'][0]
+agent_name = ['DQN', 'Reinforce', 'A2C', 'FQI'][0]
 
 if agent_name == 'DQN':
     prefill_steps = 8000
@@ -79,7 +79,7 @@ elif agent_name == 'FQI':
 
     config = {
         'gamma': 0.98,
-        'horizon': int(1e5),
+        'horizon': int(1e4),
         'disable_tqdm': False,
         'regressor_name': 'ExtraTreesRegressor',
         'regressor_params': {
@@ -130,6 +130,8 @@ class ProjectAgent:
             self.agent = ReinforceAgent(config, policy_network)
         elif self.agent_name == 'A2C':
             self.agent = A2CAgent(config, policy_network, value_network)
+        elif self.agent_name == 'FQI':
+            self.agent = FQIAgent(config)
 
     def act(self, observation, use_random=False):
         return self.agent.act(observation)
