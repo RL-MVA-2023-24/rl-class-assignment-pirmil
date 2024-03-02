@@ -13,6 +13,7 @@ class FQIAgent:
         self.regressor_params = config['regressor_params']
         self.monitor_every = config['monitor_every'] if 'monitor_every' in config.keys() else 5
         self.monitoring_nb_trials = config['monitoring_nb_trials'] if 'monitoring_nb_trials' in config.keys() else 20
+        self.save_path = config['save_path'] if 'save_path' in config.keys() else './agent.pth'
 
     def greedy_action(self, s):
         Qsa = []
