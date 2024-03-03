@@ -27,26 +27,26 @@ if agent_name == 'DQN':
 
     target_network_name = 'TargetNetwork'
     target_network_activation = nn.SiLU()
-    target_network_hidden_dim = 512
+    target_network_hidden_dim = 700
     target_network_depth = 5
     target_network_normalization = None
 
     config = {
         'learning_rate': 0.001,
         'gamma': 0.98,
-        'buffer_size': 1000000,
+        'buffer_size': int(7e5),
         'epsilon_min': 0.01,
         'epsilon_max': 1.,
         'epsilon_decay_period': 10000,
         'epsilon_delay_decay': 400,
-        'batch_size': 1024,
+        'batch_size': 1000,
         'gradient_steps': 2,
         'update_target_strategy': 'ema', # or 'replace'
         'update_target_freq': 600,
         'update_target_tau': 0.001,
         'criterion': nn.SmoothL1Loss(), # or nn.HuberLoss()
-        'monitoring_nb_trials': 50, 
-        'monitor_every': 50,
+        'monitoring_nb_trials': 40, 
+        'monitor_every': 60,
     }
 elif agent_name == 'Reinforce':
     nb_rollouts = 200
