@@ -145,7 +145,7 @@ class ProjectAgent:
         return self.agent.save(path)
 
     def load(self):
-        path = f"{os.getcwd()}/src/{self.agent_name}.pth"
+        path = os.path.join(f"{os.getcwd()}/src", self.agent.save_path)
         self.agent.load(path)
 
 
@@ -225,4 +225,3 @@ if __name__ == "__main__":
         plt.close()
         agent.save(agent.save_path)
     print(f"Successfully trained {agent_name}!")
-
