@@ -28,7 +28,7 @@ if agent_name == 'DQN':
     target_network_name = 'TargetNetwork'
     target_network_activation = nn.SiLU()
     target_network_hidden_dim = 700
-    target_network_depth = 5
+    target_network_depth = 6
     target_network_normalization = None
 
     config = {
