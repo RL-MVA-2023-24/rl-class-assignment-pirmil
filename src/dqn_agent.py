@@ -65,28 +65,28 @@ class DeepQAgent:
             Q = self.model(torch.Tensor(state).unsqueeze(0).to(device))
             return torch.argmax(Q).item()
 
-    def MC_eval(self, env, nb_trials):   # NEW NEW NEW
+    def MC_eval(self, env, nb_trials):
         MC_total_reward = []
         MC_discounted_reward = []
         for _ in range(nb_trials):
-            x,_ = env.reset()
+            x, _ = env.reset()
             done = False
             trunc = False
             total_reward = 0
             discounted_reward = 0
-            step = 0
+            t = 0
             while not (done or trunc):
                 a = self.greedy_action(x)
-                y,r,done,trunc,_ = env.step(a)
+                y, r, done, trunc, _ = env.step(a)
                 x = y
                 total_reward += r
-                discounted_reward += self.gamma**step * r
-                step += 1
+                discounted_reward += self.gamma**t * r
+                t += 1
             MC_total_reward.append(total_reward)
             MC_discounted_reward.append(discounted_reward)
         return np.mean(MC_discounted_reward), np.mean(MC_total_reward)
     
-    def V_initial_state(self, env, nb_trials):   # NEW NEW NEW
+    def V_initial_state(self, env, nb_trials):
         with torch.no_grad():
             for _ in range(nb_trials):
                 val = []
@@ -107,9 +107,9 @@ class DeepQAgent:
 
     def train(self, env, max_episode):
         episode_return = []
-        MC_avg_total_reward = []   # NEW NEW NEW
-        MC_avg_discounted_reward = []   # NEW NEW NEW
-        V_init_state = []   # NEW NEW NEW
+        MC_avg_total_reward = []
+        MC_avg_discounted_reward = []
+        V_init_state = []
         episode = 0
         episode_cum_reward = 0
         state, _ = env.reset()
@@ -150,12 +150,12 @@ class DeepQAgent:
                 episode += 1
                 # Monitoring
                 if self.monitoring_nb_trials>0 and episode % self.monitor_every == 0: 
-                    MC_dr, MC_tr = self.MC_eval(env, self.monitoring_nb_trials)    # NEW NEW NEW
-                    V0 = self.V_initial_state(env, self.monitoring_nb_trials)   # NEW NEW NEW
-                    MC_avg_total_reward.append(MC_tr)   # NEW NEW NEW
-                    MC_avg_discounted_reward.append(MC_dr)   # NEW NEW NEW
-                    V_init_state.append(V0)   # NEW NEW NEW
-                    episode_return.append(episode_cum_reward)   # NEW NEW NEW
+                    MC_dr, MC_tr = self.MC_eval(env, self.monitoring_nb_trials)
+                    V0 = self.V_initial_state(env, self.monitoring_nb_trials)
+                    MC_avg_total_reward.append(MC_tr)
+                    MC_avg_discounted_reward.append(MC_dr)
+                    V_init_state.append(V0)
+                    episode_return.append(episode_cum_reward)
                     episode_time = time.time() - start_time
                     print("Episode ", '{:4d}'.format(episode), 
                           ", epsilon ", '{:2.3f}'.format(epsilon), 
