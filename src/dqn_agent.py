@@ -52,6 +52,29 @@ class ResTargetNetwork(nn.Module):
         h = self.activation(self.fc4(h + x))   
         h = self.output_layer(h)
         return h
+    
+    
+class ResTargetNetwork2(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, activation=nn.ReLU()):
+        super().__init__()
+        self.input_layer = nn.Linear(input_dim, hidden_dim)
+        self.fc1 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc4 = nn.Linear(hidden_dim, hidden_dim)
+        self.output_layer = nn.Linear(hidden_dim, output_dim)
+        self.activation = activation or nn.ReLU()
+
+
+    def forward(self, x):
+        x = self.activation(self.input_layer(x))
+        h = self.activation(self.fc1(x))
+        h = self.activation(self.fc2(h + x))
+        h3 = self.activation(self.fc3(h))
+        h3 = self.activation(self.fc4(h3 + h))   
+        h3 = self.output_layer(h3)
+        return h3
+
 
 
 class DeepQAgent:
@@ -79,6 +102,7 @@ class DeepQAgent:
         self.monitoring_nb_trials = config['monitoring_nb_trials'] if 'monitoring_nb_trials' in config.keys() else 0
         self.monitor_every = config['monitor_every'] if 'monitor_every' in config.keys() else 30
         self.save_path = config['save_path'] if 'save_path' in config.keys() else './agent.pth'
+        self.monitor_from_episode = config['monitor_from_episode'] if 'monitor_from_episode' in config.keys() else 0
 
     def greedy_action(self, state):
         device = "cuda" if next(self.model.parameters()).is_cuda else "cpu"
@@ -170,7 +194,7 @@ class DeepQAgent:
             if done or trunc:
                 episode += 1
                 # Monitoring
-                if self.monitoring_nb_trials>0 and episode % self.monitor_every == 0: 
+                if self.monitoring_nb_trials>0 and episode % self.monitor_every == 0 and episode > self.monitor_from_episode: 
                     MC_dr, MC_tr = self.MC_eval(env, self.monitoring_nb_trials)
                     V0 = self.V_initial_state(env, self.monitoring_nb_trials)
                     MC_avg_total_reward.append(MC_tr)

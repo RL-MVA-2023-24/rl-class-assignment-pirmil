@@ -7,7 +7,7 @@ import os
 import matplotlib.pyplot as plt
 
 from env_hiv import HIVPatient
-from dqn_agent import TargetNetwork, ResTargetNetwork, DeepQAgent
+from dqn_agent import TargetNetwork, ResTargetNetwork, DeepQAgent, ResTargetNetwork2
 from reinforce_agent import ReinforceAgent, PolicyNetwork
 from a2c_agent import A2CAgent, A2CPolicyNetwork, ValueNetwork
 from fqi_agent import FQIAgent
@@ -23,12 +23,12 @@ agent_name = ['DQN', 'Reinforce', 'A2C', 'FQI'][0]
 if agent_name == 'DQN':
     prefill_steps = 10000
 
-    train_max_episode = 800
+    train_max_episode = 450
 
-    target_network_name = 'TargetNetwork'
+    target_network_name = 'ResTargetNetwork2'
     target_network_activation = nn.SiLU()
     target_network_hidden_dim = 700
-    target_network_depth = 6
+    target_network_depth = 5
     target_network_normalization = None
 
     config = {
@@ -40,13 +40,14 @@ if agent_name == 'DQN':
         'epsilon_decay_period': 10000,
         'epsilon_delay_decay': 400,
         'batch_size': 1000,
-        'gradient_steps': 2,
+        'gradient_steps': 1,
         'update_target_strategy': 'ema', # or 'replace'
         'update_target_freq': 600,
         'update_target_tau': 0.001,
         'criterion': nn.SmoothL1Loss(), # or nn.HuberLoss()
-        'monitoring_nb_trials': 40, 
-        'monitor_every': 60,
+        'monitoring_nb_trials': 32, 
+        'monitor_every': 51,
+        'monitor_from_episode': 120,
     }
 elif agent_name == 'Reinforce':
     nb_rollouts = 200
@@ -99,7 +100,7 @@ nb_actions = env.action_space.n
 
 config_constant = {
     'nb_actions': nb_actions, # There are 4 possible choices for the physician at each time step: prescribe nothing, one drug, or both.
-    'save_path': f'./{agent_name}.pth',
+    'save_path': f'./{agent_name}_bentley_RTN2_1_step_700.pth',
 }
 
 config.update(config_constant)
@@ -109,6 +110,8 @@ if agent_name == 'DQN':
         model = TargetNetwork(state_dim, target_network_hidden_dim, nb_actions, target_network_depth, target_network_activation, target_network_normalization).to(device)
     elif target_network_name == 'ResTargetNetwork':
         model = ResTargetNetwork(state_dim, target_network_hidden_dim, nb_actions, target_network_activation).to(device)
+    elif target_network_name == 'ResTargetNetwork2':
+        model = ResTargetNetwork2(state_dim, target_network_hidden_dim, nb_actions, target_network_activation).to(device)
     agent = DeepQAgent(config, model)
 elif agent_name == 'Reinforce':
     if policy_network_name == 'PolicyNetwork':
