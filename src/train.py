@@ -7,7 +7,7 @@ import os
 import matplotlib.pyplot as plt
 
 from env_hiv import HIVPatient
-from dqn_agent import TargetNetwork, DeepQAgent
+from dqn_agent import TargetNetwork, ResTargetNetwork, DeepQAgent
 from reinforce_agent import ReinforceAgent, PolicyNetwork
 from a2c_agent import A2CAgent, A2CPolicyNetwork, ValueNetwork
 from fqi_agent import FQIAgent
@@ -21,9 +21,9 @@ env = TimeLimit(
 agent_name = ['DQN', 'Reinforce', 'A2C', 'FQI'][0]
 
 if agent_name == 'DQN':
-    prefill_steps = 8000
+    prefill_steps = 10000
 
-    train_max_episode = 4000
+    train_max_episode = 800
 
     target_network_name = 'TargetNetwork'
     target_network_activation = nn.SiLU()
@@ -107,6 +107,8 @@ config.update(config_constant)
 if agent_name == 'DQN':
     if target_network_name == 'TargetNetwork':
         model = TargetNetwork(state_dim, target_network_hidden_dim, nb_actions, target_network_depth, target_network_activation, target_network_normalization).to(device)
+    elif target_network_name == 'ResTargetNetwork':
+        model = ResTargetNetwork(state_dim, target_network_hidden_dim, nb_actions, target_network_activation).to(device)
     agent = DeepQAgent(config, model)
 elif agent_name == 'Reinforce':
     if policy_network_name == 'PolicyNetwork':

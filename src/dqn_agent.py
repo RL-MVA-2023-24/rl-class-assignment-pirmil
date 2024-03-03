@@ -31,6 +31,27 @@ class TargetNetwork(nn.Module):
                 x = self.normalization(x)
         x = self.output_layer(x)
         return x
+    
+class ResTargetNetwork(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, activation=nn.ReLU()):
+        super().__init__()
+        self.input_layer = nn.Linear(input_dim, hidden_dim)
+        self.fc1 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc4 = nn.Linear(hidden_dim, hidden_dim)
+        self.output_layer = nn.Linear(hidden_dim, output_dim)
+        self.activation = activation or nn.ReLU()
+
+
+    def forward(self, x):
+        x = self.activation(self.input_layer(x))
+        h = self.activation(self.fc1(x))
+        h = self.activation(self.fc2(h + x))
+        h = self.activation(self.fc3(h))
+        h = self.activation(self.fc4(h + x))   
+        h = self.output_layer(h)
+        return h
 
 
 class DeepQAgent:
