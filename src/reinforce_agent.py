@@ -29,6 +29,9 @@ class PolicyNetwork(nn.Module):
         return action_distribution.log_prob(a)
 
 class ReinforceAgent:
+    """
+    REINFORCE agent
+    """
     def __init__(self, config, policy_network: nn.Module):
         self.device = "cuda" if next(policy_network.parameters()).is_cuda else "cpu"
         self.scalar_dtype = next(policy_network.parameters()).dtype

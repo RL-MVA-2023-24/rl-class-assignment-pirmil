@@ -78,6 +78,9 @@ class ResTargetNetwork2(nn.Module):
 
 
 class DeepQAgent:
+    """
+    DQN agent
+    """
     def __init__(self, config, model: nn.Module):
         self.device = "cuda" if next(model.parameters()).is_cuda else "cpu"
         self.nb_actions = config['nb_actions']

@@ -4,6 +4,9 @@ import tqdm
 import joblib
 
 class FQIAgent:
+    """
+    Implementation of a FQI agent based on the ExtraTreeRegressor described in https://people.montefiore.uliege.be/stan/CDC_2006.pdf
+    """
     def __init__(self, config) -> None:
         self.nb_actions = config['nb_actions']
         self.gamma = config['gamma'] if 'gamma' in config.keys() else 0.98

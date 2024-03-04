@@ -11,6 +11,7 @@ from dqn_agent import TargetNetwork, ResTargetNetwork, DeepQAgent, ResTargetNetw
 from reinforce_agent import ReinforceAgent, PolicyNetwork
 from a2c_agent import A2CAgent, A2CPolicyNetwork, ValueNetwork
 from fqi_agent import FQIAgent
+from ensemble_agent import EnsembleDeepQAgent
 from replay_buffer import prefill_buffer
 
 env = TimeLimit(
@@ -18,7 +19,8 @@ env = TimeLimit(
 )  # The time wrapper limits the number of steps in an episode at 200.
 
 ##### HYPERPARAMETERS TO TUNE ######
-agent_name = ['DQN', 'Reinforce', 'A2C', 'FQI'][0]
+# My best model is an ensemble DQN
+agent_name = ['DQN', 'Reinforce', 'A2C', 'FQI', 'EnsembleDQN'][-1]
 
 if agent_name == 'DQN':
     prefill_steps = 10000
@@ -91,7 +93,55 @@ elif agent_name == 'FQI':
         'monitor_every': 4,
         'monitoring_nb_trials': 20,   
     }
+elif agent_name == 'EnsembleDQN':
+    config = {}
 
+    agent_configs = [
+        {
+            'target_network_name': 'ResTargetNetwork2',
+            'target_network_hidden_dim': 700,
+            'target_network_depth': None,
+            'path': './DQN_bentley_RTN2_1_step_700_7oo9.pth',
+        },
+        {
+            'target_network_name': 'ResTargetNetwork2',
+            'target_network_hidden_dim': 700,
+            'target_network_depth': None,
+            'path': './DQN_mouette_RTN2_4_steps_7oo9.pth',
+        },
+        {
+            'target_network_name': 'TargetNetwork',
+            'target_network_hidden_dim': 512,
+            'target_network_depth': 5,
+            'path': './DQN_1_7oo9.pth',
+        },
+        {
+            'target_network_name': 'TargetNetwork',
+            'target_network_hidden_dim': 1500,
+            'target_network_depth': 5,
+            'path': './DQN_mouette_6oo9.pth',
+        },
+        {
+            'target_network_name': 'ResTargetNetwork',
+            'target_network_hidden_dim': 600,
+            'target_network_depth': None,
+            'path': './DQN_mouette_3steps_600_5_ResTarget_potential_4oo9.pth',
+        },
+        {
+            'target_network_name': 'TargetNetwork',
+            'target_network_hidden_dim': 700,
+            'target_network_depth': 6,
+            'path': './DQN_bentley_TN_5oo9.pth',
+        },
+        {
+            'target_network_name': 'TargetNetwork',
+            'target_network_hidden_dim': 1000,
+            'target_network_depth': 5,
+            'path': './DQN_jaguar_6oo9.pth',
+        },
+    ]
+
+    weights = [7/9-1e-5, 7/9-1e-5, 7/9, 6/9, 4/9, 5/9, 6/9]
 
 ##### FIXED PARAMETERS ######
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -101,6 +151,7 @@ nb_actions = env.action_space.n
 config_constant = {
     'nb_actions': nb_actions, # There are 4 possible choices for the physician at each time step: prescribe nothing, one drug, or both.
     'save_path': f'./{agent_name}_bentley_RTN2_1_step_700.pth',
+    'state_dim': state_dim,
 }
 
 config.update(config_constant)
@@ -137,6 +188,8 @@ class ProjectAgent:
             self.agent = A2CAgent(config, policy_network, value_network)
         elif self.agent_name == 'FQI':
             self.agent = FQIAgent(config)
+        elif agent_name == 'EnsembleDQN':
+            self.agent = EnsembleDeepQAgent(config, agent_configs, weights)
 
     def act(self, observation, use_random=False):
         return self.agent.act(observation)
